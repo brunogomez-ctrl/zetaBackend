@@ -1,0 +1,1 @@
+export const NODE_CODE_LENGTH = 3;

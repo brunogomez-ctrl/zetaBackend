@@ -1,0 +1,26 @@
+{
+  "tenantId": "oxxo",
+  "wavg": {
+    "configs": {
+      "wavg": { "numericPrecision": 2, "multiplier": 10 },
+      "wavg-5": { "numericPrecision": 2, "multiplier": 20 }
+    },
+    "indicators": {
+      "WILLINGNESS_TO_RECOMMEND": {
+        "numericPrecision": 2,
+        "scalar": "case(numberAnswer,1,-100,2,-100,3,-100,4,-100,5,-100,6,-100,7,0,8,0,9,100,10,100)"
+      }
+    }
+  },
+  "nps": {
+    "default": { "detractorMax": 6, "promoterMin": 9, "numericPrecision": 2 },
+    "configs": {
+      "nps-sentiment": {
+        "numericPrecision": 2,
+        "detractorRange": [-1, -1],
+        "promoterRange": [1, 1],
+        "passiveRange": [0, 0]
+      }
+    }
+  }
+}

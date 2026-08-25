@@ -1,0 +1,14 @@
+{
+  "tenantId": "iamsa",
+  "wavg": {
+    "configs": {
+      "wavg": { "numericPrecision": 2 },
+      "wavg-5": { "numericPrecision": 2, "multiplier": 20 }
+    },
+    "indicators": {}
+  },
+  "nps": {
+    "default": { "detractorMax": 6, "promoterMin": 9, "numericPrecision": 2 },
+    "configs": {}
+  }
+}
