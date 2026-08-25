@@ -31,8 +31,8 @@ export interface TenantConfig {
 // Registro de tenants conocidos. Cargado una sola vez al importar este módulo (boot-time),
 // igual que @ConfigurationProperties en el Java real — nunca se relee por request.
 const TENANT_REGISTRY: Record<string, TenantConfig> = {
-  iamsa: iamsaConfig as TenantConfig,
-  oxxo: oxxoConfig as TenantConfig,
+  iamsa: iamsaConfig as unknown as TenantConfig,
+  oxxo: oxxoConfig as unknown as TenantConfig,
 };
 
 const ACTIVE_TENANT = process.env.TENANT ?? 'iamsa';

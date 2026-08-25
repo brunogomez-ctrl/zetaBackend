@@ -26,7 +26,7 @@ function buildCacheKey(idOrName: string, filter: FilterRequest): string {
 }
 
 export async function postAlertValues(req: Request, res: Response) {
-  const { idOrName } = req.params;
+  const idOrName = String(req.params.idOrName);
   const key = buildCacheKey(idOrName, req.body);
 
   const { value: result, hit } = await getOrSetCache(
