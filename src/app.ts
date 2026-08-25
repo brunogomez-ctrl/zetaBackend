@@ -45,6 +45,8 @@
 // export default app;
 // commit 1
 
+
+// prueba 1 desde bruno
 import express from 'express';
 import cors from 'cors';
 import indicatorRoutes from './routes/indicator.routes';
