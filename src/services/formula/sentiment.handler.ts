@@ -134,7 +134,7 @@ export class SentimentHandler implements FormulaHandler {
 // (number_answer = -1), 1 por combinación grupo+tag, del question_id fijo 999.
 async function getGroupComment(
   cmd: FilterCommand,
-  level1Column: typeof surveyResponse.criticalMomentCode,
+  level1Column: typeof surveyResponse.criticalMomentCode | typeof surveyResponse.geoLocationCode | typeof surveyResponse.logicalLocationCode,
   codeLength: number | undefined,
   level1Key: string,
   tag: string,
