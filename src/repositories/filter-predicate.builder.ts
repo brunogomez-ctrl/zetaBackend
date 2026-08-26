@@ -37,5 +37,16 @@ export function buildWhere(cmd: FilterCommand): SQL {
     );
   }
 
+  if (cmd.criticalMomentRanges.length) {
+    conditions.push(
+      or(...cmd.criticalMomentRanges.map(r =>
+        and(
+          gte(surveyResponse.criticalMomentCode, r.from),
+          lt(surveyResponse.criticalMomentCode, r.to),
+        )
+      ))!
+    );
+  }
+
   return and(...conditions)!;
 }

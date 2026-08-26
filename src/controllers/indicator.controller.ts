@@ -11,15 +11,18 @@ const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min
 function buildCacheKey(idOrName: string, filter: FilterRequest): string {
   const geo = [...(filter.geoLocationInclude ?? [])].sort((a, b) => a - b).join(',');
   const logical = [...(filter.logicalLocationInclude ?? [])].sort((a, b) => a - b).join(',');
+  const criticalMoment = [...(filter.criticalMomentInclude ?? [])].sort((a, b) => a - b).join(',');
   return [
     idOrName,
     filter.dateFrom,
     filter.dateTo,
     geo,
     logical,
+    criticalMoment,
     filter.groupBy ?? '',
     filter.groupByLevel ?? '',
     filter.formulaConfig ?? '',
+    filter.resultType ?? '',
   ].join('|');
 }
 

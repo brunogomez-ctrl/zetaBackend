@@ -4,9 +4,10 @@ export interface FilterRequest {
   geoLocationInclude?: number[];
   logicalLocationInclude?: number[];
   criticalMomentInclude?: number[];
-  groupBy?: 'geoLocation' | 'logicalLocation' | 'alertStatus' | 'criticalMoment';
+  groupBy?: string; // ej. 'geoLocation' | 'logicalLocation' | 'alertStatus' | 'criticalMoment,tag'
   groupByLevel?: number;
   formulaConfig?: string;
+  resultType?: 'bottom' | 'top'; // solo 'bottom' implementado hoy (lo único que usa el Ishikawa real)
 }
 
 export interface LocationRange {
@@ -19,10 +20,10 @@ export interface FilterCommand {
   dateTo: Date;
   geoLocationRanges: LocationRange[];
   logicalLocationRanges: LocationRange[];
-  // Simplificación deliberada respecto a producción: ahí criticalMomentInclude filtra por
-  // rango jerárquico (search_code_from/to), igual que geo/lógica. Aquí filtramos por
-  // critical_moment_id literal — más simple, documentado como pendiente en el markdown.
-  criticalMomentIds?: number[];
-  groupBy?: 'geoLocation' | 'logicalLocation' | 'alertStatus' | 'criticalMoment';
+  criticalMomentRanges: LocationRange[];
+  // Java: getLocationGroupCodeLength = max(largo de los 'from' del filtro) + NODE_CODE_LENGTH,
+  // se calcula solo, el cliente no lo manda. Igual para las 3 dimensiones jerárquicas.
+  criticalMomentGroupCodeLength: number;
+  groupBy?: string;
   groupCodeLength?: number;
 }
