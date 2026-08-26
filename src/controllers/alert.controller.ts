@@ -12,6 +12,7 @@ const CACHE_TTL_MS = 30 * 60 * 1000; // 30 min — mismo criterio que indicator.
 function buildCacheKey(idOrName: string, filter: FilterRequest): string {
   const geo = [...(filter.geoLocationInclude ?? [])].sort((a, b) => a - b).join(',');
   const logical = [...(filter.logicalLocationInclude ?? [])].sort((a, b) => a - b).join(',');
+  const criticalMoment = [...(filter.criticalMomentInclude ?? [])].sort((a, b) => a - b).join(',');
   return [
     'alerts', // prefijo para que no choque con las llaves de indicator.controller.ts
     idOrName,
@@ -19,9 +20,11 @@ function buildCacheKey(idOrName: string, filter: FilterRequest): string {
     filter.dateTo,
     geo,
     logical,
+    criticalMoment,
     filter.groupBy ?? '',
     filter.groupByLevel ?? '',
     filter.formulaConfig ?? '',
+    filter.resultType ?? '',
   ].join('|');
 }
 

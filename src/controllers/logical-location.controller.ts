@@ -6,6 +6,8 @@ import { eq, isNull } from 'drizzle-orm';
 
 const parentAlias = alias(logicalLocation, 'parent_ll');
 
+// GET /api/logical-locations           -> raíces
+// GET /api/logical-locations?parentId=15 -> hijos directos del id 15
 export async function getLogicalLocationChildren(req: Request, res: Response) {
   const parentIdParam = req.query.parentId;
 

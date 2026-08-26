@@ -10,4 +10,5 @@ export const surveyResponse = mysqlTable('survey_response', {
   createdAt: datetime('created_at', { mode: 'string' }),
   status: varchar('status', { length: 255 }),
   criticalMomentId: bigint('critical_moment_id', { mode: 'number' }),
+  criticalMomentCode: varchar('critical_moment_code', { length: 255 }),
 });

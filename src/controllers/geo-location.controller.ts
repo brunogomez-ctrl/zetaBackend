@@ -1,23 +1,3 @@
-// import { Request, Response } from 'express';
-// import { db } from '../db';
-// import { geoLocation } from '../db/schema/geo-location';
-// import { eq, isNull } from 'drizzle-orm';
-
-// // GET /api/geo-locations           -> nivel 1 (raíces, parent_id IS NULL)
-// // GET /api/geo-locations?parentId=19 -> hijos directos del id 19
-// export async function getGeoLocationChildren(req: Request, res: Response) {
-//   const parentIdParam = req.query.parentId;
-//   const parentId = parentIdParam != null ? Number(parentIdParam) : null;
-
-//   const rows = await db
-//     .select({ id: geoLocation.id, name: geoLocation.name, code: geoLocation.code })
-//     .from(geoLocation)
-//     .where(parentId === null ? isNull(geoLocation.parentId) : eq(geoLocation.parentId, parentId))
-//     .orderBy(geoLocation.name);
-
-//   res.json(rows);
-// }
-
 import { Request, Response } from 'express';
 import { db } from '../db';
 import { geoLocation } from '../db/schema/geo-location';

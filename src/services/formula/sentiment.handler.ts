@@ -11,6 +11,12 @@ const DEFAULT_BOTTOM_SIZE = 5; // Java: SentimentHandler.getBottomSize(), defaul
 // Hardcoded en el Java real (SentimentCommentsProvider.getComments) — no viene de indicator_question.
 const COMMENT_QUESTION_ID = 999;
 
+// El groupBy real llega como string compuesto: "criticalMoment,tag" — el primer término
+// es el nivel 1, 'tag' (siempre el último) ya está implícito en esta fórmula.
+function getLevel1Dimension(groupBy?: string): string {
+  return (groupBy ?? '').split(',')[0]?.trim() ?? '';
+}
+
 // Alcance de este piloto: replica resultType='bottom' (el único que usa el widget de
 // Ishikawa) con agrupamiento de 2 niveles (nivel 1 configurable + 'tag' siempre).
 // NO implementa: categorías de sentimiento (sentiment_category), rankings top/attributes,
@@ -19,11 +25,37 @@ export class SentimentHandler implements FormulaHandler {
   async compute(questionIds: number[], cmd: FilterCommand): Promise<FormulaResult[]> {
     if (questionIds.length === 0) return [];
 
-    const level1Expr = cmd.groupBy === 'criticalMoment'
-      ? surveyResponse.criticalMomentId
-      : cmd.groupBy === 'logicalLocation'
+    const level1Dimension = getLevel1Dimension(cmd.groupBy);
+    const isCriticalMoment = level1Dimension === 'criticalMoment';
+
+    // critical_moment también usa materialized path (search_code_from/to), igual que
+    // geo/lógica — no se agrupa por critical_moment_id literal, se agrupa por el código
+    // truncado (SUBSTRING), confirmado contra la respuesta real de producción (groupId
+    // regresaba el código truncado "001", no el id que se mandó en criticalMomentInclude).
+    const level1Column = isCriticalMoment
+      ? surveyResponse.criticalMomentCode
+      : level1Dimension === 'logicalLocation'
         ? surveyResponse.logicalLocationCode
         : surveyResponse.geoLocationCode;
+
+    // Para criticalMoment el largo se calcula solo (Java: max(largo del filtro) + NODE_CODE_LENGTH).
+    // Para geo/lógica se sigue respetando el groupByLevel explícito que ya ten\u00edamos.
+    const codeLength = isCriticalMoment ? cmd.criticalMomentGroupCodeLength : cmd.groupCodeLength;
+
+    const level1Expr = codeLength
+      ? sql`SUBSTRING(${level1Column}, 1, ${codeLength})`
+      : level1Column;
+
+    const whereClause = and(
+      buildWhere(cmd),
+      inArray(questionResponse.questionId, questionIds),
+      isNotNull(questionResponse.textAnswer),
+    );
+
+    // DEBUG TEMPORAL — quitar después de diagnosticar
+    // console.log('DEBUG criticalMomentRanges:', JSON.stringify(cmd.criticalMomentRanges));
+    // console.log('DEBUG codeLength:', codeLength);
+    // console.log('DEBUG SQL:', whereClause?.toSQL?.() ?? whereClause);
 
     const rows = await db
       .select({
@@ -36,11 +68,7 @@ export class SentimentHandler implements FormulaHandler {
       })
       .from(questionResponse)
       .innerJoin(surveyResponse, eq(questionResponse.surveyResponseId, surveyResponse.id))
-      .where(and(
-        buildWhere(cmd),
-        inArray(questionResponse.questionId, questionIds),
-        isNotNull(questionResponse.textAnswer),
-      ))
+      .where(whereClause)
       .groupBy(level1Expr, questionResponse.textAnswer);
 
     // Agrupa en memoria por nivel 1 (así podemos rankear "bottom N" tags DENTRO de cada grupo).
@@ -51,16 +79,18 @@ export class SentimentHandler implements FormulaHandler {
       byLevel1.get(key)!.push(r);
     }
 
-    // Resuelve nombre legible de critical_moment (para geo/lógica dejamos el código crudo,
-    // igual que el resto de fórmulas — no se resuelve a nombre en ningún otro handler).
+    // Resuelve nombre legible: busca qué critical_moment tiene ESTE código truncado como
+    // su propio search_code_from (así se ve en producción real: código "001" -> "TODOS").
     const level1Names = new Map<string, string>();
-    if (cmd.groupBy === 'criticalMoment') {
-      const ids = Array.from(byLevel1.keys()).map(Number).filter(n => !Number.isNaN(n));
-      if (ids.length > 0) {
-        const cms = await db.select({ id: criticalMoment.id, name: criticalMoment.name })
+    if (isCriticalMoment) {
+      const codes = Array.from(byLevel1.keys()).filter(k => k !== 'sin_grupo');
+      if (codes.length > 0) {
+        const cms = await db.select({ code: criticalMoment.searchCodeFrom, name: criticalMoment.name })
           .from(criticalMoment)
-          .where(inArray(criticalMoment.id, ids));
-        for (const cm of cms) level1Names.set(String(cm.id), cm.name ?? String(cm.id));
+          .where(inArray(criticalMoment.searchCodeFrom, codes));
+        for (const cm of cms) {
+          if (cm.code) level1Names.set(cm.code, cm.name ?? cm.code);
+        }
       }
     }
 
@@ -83,7 +113,7 @@ export class SentimentHandler implements FormulaHandler {
 
       const tagsWithComments: SentimentTagResult[] = [];
       for (const t of sorted) {
-        const comment = await getGroupComment(cmd, level1Key, t.group);
+        const comment = await getGroupComment(cmd, level1Column, codeLength, level1Key, t.group);
         tagsWithComments.push({ ...t, comments: comment ? [comment] : [] });
       }
 
@@ -102,7 +132,13 @@ export class SentimentHandler implements FormulaHandler {
 
 // Replica SentimentCommentsProvider.getComments: solo comentarios de respuestas NEGATIVAS
 // (number_answer = -1), 1 por combinación grupo+tag, del question_id fijo 999.
-async function getGroupComment(cmd: FilterCommand, level1Key: string, tag: string): Promise<string | null> {
+async function getGroupComment(
+  cmd: FilterCommand,
+  level1Column: typeof surveyResponse.criticalMomentCode,
+  codeLength: number | undefined,
+  level1Key: string,
+  tag: string,
+): Promise<string | null> {
   const conditions = [
     buildWhere(cmd),
     eq(questionResponse.questionId, COMMENT_QUESTION_ID),
@@ -111,17 +147,14 @@ async function getGroupComment(cmd: FilterCommand, level1Key: string, tag: strin
     isNotNull(questionResponse.commentAnswer),
   ];
 
-  if (cmd.groupBy === 'criticalMoment') {
-    const criticalMomentId = Number(level1Key);
-    conditions.push(
-      Number.isNaN(criticalMomentId)
-        ? isNull(surveyResponse.criticalMomentId)
-        : eq(surveyResponse.criticalMomentId, criticalMomentId)
-    );
-  } else if (cmd.groupBy === 'logicalLocation') {
-    conditions.push(eq(surveyResponse.logicalLocationCode, level1Key));
+  if (level1Key === 'sin_grupo') {
+    conditions.push(isNull(level1Column));
+  } else if (codeLength) {
+    // level1Key es un código truncado (ej. "001") — compara con el mismo SUBSTRING
+    // que se usó para agruparlo, no con igualdad directa contra la columna completa.
+    conditions.push(eq(sql`SUBSTRING(${level1Column}, 1, ${codeLength})`, level1Key));
   } else {
-    conditions.push(eq(surveyResponse.geoLocationCode, level1Key));
+    conditions.push(eq(level1Column, level1Key));
   }
 
   const [row] = await db
