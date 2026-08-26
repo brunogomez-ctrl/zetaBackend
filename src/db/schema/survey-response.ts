@@ -9,4 +9,5 @@ export const surveyResponse = mysqlTable('survey_response', {
   answeredAt: datetime('answered_at', { mode: 'string' }),
   createdAt: datetime('created_at', { mode: 'string' }),
   status: varchar('status', { length: 255 }),
+  criticalMomentId: bigint('critical_moment_id', { mode: 'number' }),
 });

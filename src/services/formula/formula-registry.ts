@@ -6,6 +6,7 @@ import { SentimentCommentsHandler } from './sentiment-comments.handler';
 import { SurveyResponseCountersHandler } from './survey-response-counters.handler';
 import { AlertCountersHandler } from './alert-counters.handler';
 import { AlertFirstResponseTimeHandler } from './alert-first-response-time.handler';
+import { SentimentHandler } from './sentiment.handler';
 
 const registry: Record<string, FormulaHandler> = {
   wavg: new WavgFormulaHandler(),
@@ -20,6 +21,7 @@ const registry: Record<string, FormulaHandler> = {
   surveyResponseCounters: new SurveyResponseCountersHandler(),
   alertCounters: new AlertCountersHandler(),
   alertFirstResponseTime: new AlertFirstResponseTimeHandler(),
+  sentiment: new SentimentHandler(),
 };
 
 export function getFormulaHandler(formulaName: string): FormulaHandler {

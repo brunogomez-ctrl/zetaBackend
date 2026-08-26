@@ -8,6 +8,16 @@ export interface CommentEntry {
   score?: number | null;
 }
 
+export interface SentimentTagResult {
+  group: string;
+  groupId: string;
+  count: number;
+  positive: number;
+  negative: number;
+  neutral: number;
+  comments: string[];
+}
+
 export interface FormulaResult {
   group: string;
   groupId: string;
@@ -40,6 +50,7 @@ export interface FormulaResult {
   slowCount?: number;
   fastPerc?: number;
   slowPerc?: number;
+  tags?: SentimentTagResult[]; // para 'sentiment' / diagrama de Ishikawa
 }
 
 export interface FormulaHandler {
