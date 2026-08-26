@@ -3,7 +3,8 @@ export interface FilterRequest {
   dateTo: string;
   geoLocationInclude?: number[];
   logicalLocationInclude?: number[];
-  groupBy?: 'geoLocation' | 'logicalLocation' | 'alertStatus';
+  criticalMomentInclude?: number[];
+  groupBy?: 'geoLocation' | 'logicalLocation' | 'alertStatus' | 'criticalMoment';
   groupByLevel?: number;
   formulaConfig?: string;
 }
@@ -18,6 +19,10 @@ export interface FilterCommand {
   dateTo: Date;
   geoLocationRanges: LocationRange[];
   logicalLocationRanges: LocationRange[];
-  groupBy?: 'geoLocation' | 'logicalLocation' | 'alertStatus';
+  // Simplificación deliberada respecto a producción: ahí criticalMomentInclude filtra por
+  // rango jerárquico (search_code_from/to), igual que geo/lógica. Aquí filtramos por
+  // critical_moment_id literal — más simple, documentado como pendiente en el markdown.
+  criticalMomentIds?: number[];
+  groupBy?: 'geoLocation' | 'logicalLocation' | 'alertStatus' | 'criticalMoment';
   groupCodeLength?: number;
 }
