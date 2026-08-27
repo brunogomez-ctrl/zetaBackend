@@ -2,8 +2,10 @@
   "tenantId": "oxxo",
   "wavg": {
     "configs": {
-      "wavg": { "numericPrecision": 2, "multiplier": 10 },
-      "wavg-5": { "numericPrecision": 2, "multiplier": 20 }
+      "wavg": { "numericPrecision": 1 },
+      "wavg-5": { "numericPrecision": 1 },
+      "wavg-positive": { "numericPrecision": 2, "scalar": "case(numberAnswer,1,100,0)" },
+      "wavg-negative": { "numericPrecision": 2, "scalar": "case(numberAnswer,-1,100,0)" }
     },
     "indicators": {
       "WILLINGNESS_TO_RECOMMEND": {
@@ -13,8 +15,11 @@
     }
   },
   "nps": {
+    "_comment_default": "application-oxxo-retail.yml no define un default top-level para nps, solo 'configs' (nps-10/nps-5/nps-sentiment). Elegimos nps-10 como default porque es la escala clásica 0-10 — decisión nuestra, no algo explícito en el yml.",
     "default": { "detractorMax": 6, "promoterMin": 9, "numericPrecision": 2 },
     "configs": {
+      "nps-10": { "numericPrecision": 2, "detractorRange": [0, 6], "promoterRange": [9, 10] },
+      "nps-5": { "numericPrecision": 2, "detractorRange": [0, 2], "promoterRange": [4, 5] },
       "nps-sentiment": {
         "numericPrecision": 2,
         "detractorRange": [-1, -1],
