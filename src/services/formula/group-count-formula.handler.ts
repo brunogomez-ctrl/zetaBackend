@@ -1,4 +1,6 @@
-import { and, eq, inArray, sql, type AnyColumn } from 'drizzle-orm';
+//import { and, eq, inArray, sql, type AnyColumn } from 'drizzle-orm';
+import {and,eq,inArray,sql,type SQL,} from 'drizzle-orm';
+import type { MySqlColumn } from 'drizzle-orm/mysql-core';
 import { db } from '../../db';
 import { questionResponse } from '../../db/schema/question-response';
 import { surveyResponse } from '../../db/schema/survey-response';
@@ -19,7 +21,8 @@ import { FormulaHandler, FormulaResult } from './formula-handler.interface';
 //   valor crudo tal cual, aunque el request mande groupNameFormat: 'description'.
 // - NO soporta un groupBy externo adicional (ej. 'geoLocation,valor') — solo el caso
 //   simple validado contra el ejemplo real.
-export function createGroupCountHandler(answerColumn: AnyColumn): FormulaHandler {
+//export function createGroupCountHandler(answerColumn: AnyColumn): FormulaHandler {
+export function createGroupCountHandler(answerColumn: MySqlColumn<any, any, any>,): FormulaHandler {
   return {
     async compute(questionIds, cmd): Promise<FormulaResult[]> {
       if (questionIds.length === 0) return [];
