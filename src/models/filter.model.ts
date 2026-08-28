@@ -6,8 +6,10 @@ export interface FilterRequest {
   criticalMomentInclude?: number[];
   groupBy?: string; // ej. 'geoLocation' | 'logicalLocation' | 'alertStatus' | 'criticalMoment,tag'
   groupByLevel?: number;
+  formula?: string; // pisa indicator.formula si viene — confirmado en Java (getFormulaOrDefault)
   formulaConfig?: string;
   resultType?: 'bottom' | 'top'; // solo 'bottom' implementado hoy (lo único que usa el Ishikawa real)
+  groupNameFormat?: string; // aceptado pero aún no resuelve etiquetas (pendiente, ver count-number)
 }
 
 export interface LocationRange {

@@ -22,7 +22,9 @@ export async function getIndicatorValues(idOrName: string, filter: FilterRequest
     .filter((id): id is number => id != null);
 
   const cmd = await buildFilterCommand(filter);
-  const formulaName = ind.formula ?? '';
+  // Java (IndicatorValuesCommand.getFormulaOrDefault): el 'formula' del request PISA
+  // el formula guardado en indicator — no lo complementa, lo reemplaza por completo.
+  const formulaName = filter.formula ?? ind.formula ?? '';
   const handler = getFormulaHandler(formulaName);
 
   const formulaConfigName = ind.formulaConfig ?? formulaName;

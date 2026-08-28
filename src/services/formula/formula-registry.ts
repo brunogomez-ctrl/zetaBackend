@@ -7,6 +7,8 @@ import { SurveyResponseCountersHandler } from './survey-response-counters.handle
 import { AlertCountersHandler } from './alert-counters.handler';
 import { AlertFirstResponseTimeHandler } from './alert-first-response-time.handler';
 import { SentimentHandler } from './sentiment.handler';
+import { countNumberHandler } from './count-number-formula.handler';
+import { countTextHandler } from './count-text-formula.handler';
 
 const registry: Record<string, FormulaHandler> = {
   wavg: new WavgFormulaHandler(),
@@ -20,6 +22,8 @@ const registry: Record<string, FormulaHandler> = {
   // fórmula en el Java real (NpsTenFormulaHandler/NpsFiveFormulaHandler extends NpsFormulaHandler).
   'nps-10': new NpsFormulaHandler(),
   'nps-5': new NpsFormulaHandler(),
+  'count-number': countNumberHandler,
+  'count-text': countTextHandler,
   comments: new CommentsFormulaHandler(),
   'sentiment-comments': new SentimentCommentsHandler(),
   surveyResponseCounters: new SurveyResponseCountersHandler(),
