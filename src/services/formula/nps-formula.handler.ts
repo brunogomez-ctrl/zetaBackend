@@ -21,6 +21,9 @@ export class NpsFormulaHandler implements FormulaHandler {
     // o detractorMax/promoterMin (escala 0-10 clásica, default de IAMSA).
     const [detractorMin, detractorMax] = cfg.detractorRange ?? [0, cfg.detractorMax ?? 6];
     const [promoterMin, promoterMax] = cfg.promoterRange ?? [cfg.promoterMin ?? 9, 10];
+    // fan: default de la clase NpsConfiguration.java (between(numberAnswer,10,10)) — no viene
+    // de ningún yml de ningún tenant, SIEMPRE aplica salvo que el config lo sobreescriba explícito.
+    const [fanMin, fanMax] = cfg.fanRange ?? [10, 10];
 
     const codeColumn = cmd.groupBy === 'logicalLocation'
       ? surveyResponse.logicalLocationCode
@@ -36,6 +39,7 @@ export class NpsFormulaHandler implements FormulaHandler {
         count: sql<number>`COUNT(*)`,
         promoterCount: sql<number>`SUM(CASE WHEN ${questionResponse.numberAnswer} BETWEEN ${promoterMin} AND ${promoterMax} THEN 1 ELSE 0 END)`,
         detractorCount: sql<number>`SUM(CASE WHEN ${questionResponse.numberAnswer} BETWEEN ${detractorMin} AND ${detractorMax} THEN 1 ELSE 0 END)`,
+        fanCount: sql<number>`SUM(CASE WHEN ${questionResponse.numberAnswer} BETWEEN ${fanMin} AND ${fanMax} THEN 1 ELSE 0 END)`,
       })
       .from(questionResponse)
       .innerJoin(surveyResponse, eq(questionResponse.surveyResponseId, surveyResponse.id))
@@ -46,7 +50,9 @@ export class NpsFormulaHandler implements FormulaHandler {
       const count = Number(r.count);
       const promoterCount = Number(r.promoterCount);
       const detractorCount = Number(r.detractorCount);
+      const fanCount = Number(r.fanCount);
       const passiveCount = count - promoterCount - detractorCount;
+      const promoterNoFanCount = promoterCount - fanCount;
 
       const pct = (n: number) => count > 0 ? round((n / count) * 100, cfg.numericPrecision) : 0;
 
@@ -58,6 +64,10 @@ export class NpsFormulaHandler implements FormulaHandler {
         promoters: pct(promoterCount),
         detractors: pct(detractorCount),
         passives: pct(passiveCount),
+        fanCount,
+        fans: pct(fanCount),
+        promoterNoFanCount,
+        promotersNoFan: pct(promoterNoFanCount),
       };
     });
   }

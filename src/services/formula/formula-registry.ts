@@ -16,6 +16,10 @@ const registry: Record<string, FormulaHandler> = {
   // resuelve 'wavg-5' solo con esto.
   'wavg-5': new WavgFormulaHandler(),
   nps: new NpsFormulaHandler(),
+  // Mismo patrón que wavg-5: nps-10/nps-5 están registrados como su propio nombre de
+  // fórmula en el Java real (NpsTenFormulaHandler/NpsFiveFormulaHandler extends NpsFormulaHandler).
+  'nps-10': new NpsFormulaHandler(),
+  'nps-5': new NpsFormulaHandler(),
   comments: new CommentsFormulaHandler(),
   'sentiment-comments': new SentimentCommentsHandler(),
   surveyResponseCounters: new SurveyResponseCountersHandler(),

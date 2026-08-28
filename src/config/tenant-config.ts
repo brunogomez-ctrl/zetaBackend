@@ -14,6 +14,7 @@ export interface NpsConfigEntry {
   detractorRange?: [number, number];
   promoterRange?: [number, number];
   passiveRange?: [number, number];
+  fanRange?: [number, number]; // default real de Java: [10,10], siempre aplica salvo override
 }
 
 export interface TenantConfig {

@@ -28,6 +28,10 @@ export interface FormulaResult {
   promoters?: number;
   detractors?: number;
   passives?: number;
+  fanCount?: number;
+  fans?: number;
+  promoterNoFanCount?: number;
+  promotersNoFan?: number;
   comments?: CommentEntry[];
   answeredCount?: number;
   notHandledCount?: number;
